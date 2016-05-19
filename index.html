@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Rock Paper Scissors Multiplayer</title>
+
+<script src="https://cdn.firebase.com/js/client/2.4.1/firebase.js"></script>
+
+
+
+</head>
+<body>
+
+	<div class="container-fluid">
+
+		<div id="intro" class="gamePlay text-center">
+			<h1 class="text-center">Rock, Paper, Scissors</h1>
+
+			<div id="playerDetails">
+				<p><label for="playerName">Name: </label>
+				<input type="text" id="playerName"></p>
+				<p><input type="submit" value="Begin!" id="btnBegin"></p>
+			</div>
+		</div>
+
+		<div id="game">
+			<h1 class="text-center">Rock, Paper, Scissors</h1>
+
+			<h4 class="text-center">Hi <span id="currName">name</span>! You are Player <span id="playNum">#</span></h4>
+			<h3 id="whosTurn" class="text-center"></h3>
+			<h3 id="p1Status"></h3>
+			<h3 id="p2Status"></h3>
+
+			<div id="player1" class="players text-center">
+				<h3 id="p1Name">Player1</h3>
+				
+
+				<ul class="gamePieces" id="p1Pieces">
+					<li id="rock">Rock</li>
+					<li id="paper">Paper</li>
+					<li id="scissors">Scissors</li>
+				</ul>
+
+				<p id="p1Waiting" class="waiting">Waiting for player 1</p>
+
+				<p id="player1Results" class="playerResults">Wins: <span id="p1Wins">0</span> Losses: <span id="p1Loss">0</span></p>
+
+			</div>
+
+			<div id="player2" class="players text-center">
+				<h3 id="p2Name">Player2</h3>
+				<h3 id="p2Status"></h3>
+
+				<ul class="gamePieces" id="p2Pieces">
+					<li id="rock">Rock</li>
+					<li id="paper">Paper</li>
+					<li id="scissors">Scissors</li>
+				</ul>
+
+				<p id="p2Waiting" class="waiting">Waiting for player 2</p>
+
+				<p id="p2Results" class="playerResults">Wins: <span id="p2Wins">0</span> Losses: <span id="p2Loss">0</span></p>
+			</div>
+
+			<button id="reset">Reset Game</button>
+
+		</div>
+
+	</div>
+
+<script src="https://code.jquery.com/jquery-2.2.1.min.js"></script>	
+
+	<!-- App.js -->
+<script>
+
+
+	var name;
+	var count;
+	var choice = "";
+	var winP1 = 0;
+	var losP1 = 0;
+	var winP2 = 0;
+	var losP2 = 0;
+	var player;
+	var choiceP1;
+	var choiceP2;
+	var connection = new Firebase("");
+
+	connection.once("value", function(snapshot){
+
+		var playersExist = snapshot.child("playerCount").exists();
+
+		console.log("player exists: " + playersExist);
+
+		if(playersExist){
+
+			if(snapshot.child("playerCount").val() == 2){
+
+				$('#playerDetails').css('display', 'none');
+
+				var newPara = $('<h4>').html("Try again")
+				.css({'font-weight': 'bold','color': '#FF0000','margin-top': '20px'});
+				$('#intro').append(newPara);
+
+			}
+
+		} else {
+
+		}
+	});
+
+	connection.off("value", function(snapshot){});
+
+	
+	$('#btnBegin').on('click', function(){
+
+		if($('.gamePlay input[type=text]').val().trim() != ""){
+
+			playerName = $('.gamePlay input[type=text]').val().trim();
+
+			connection.once("value", function(snapshot){
+
+				currPlayerCount = snapshot.child("playerCount").val();
+				currPlayerCount++;
+
+				connection.update({count: currCount);
+
+
+				if(count == 1) {
+					connection.update({
+
+						1:{
+
+							Name: playerName,
+							Choice: gameChoice,
+							Wins: p1Wins,
+							Losses: p1Losses
+						}
+					});
+
+				} else {
+					connection.update({
+
+						2:{
+
+							Name: playerName,
+							Choice: gameChoice,
+							Wins: p2Wins,
+							Losses: p2Losses
+						}
+					});
+				}	
+				$('#intro').hide();
+				$('#game').show();
+			});
+
+		}
+
+	});
+
+		connection.on("child_added", function(snapshot){
+
+			console.log("child added " +snapshot.val());
+			$('#playNum').html(currPlayerCount).attr('data-player', currPlayerCount);
+			$('#currName').html(playerName);
+			player = $('#playNum').attr('data-player');
+
+
+			if(snapshot.key() == "1"){
+
+				$('#p1Name').html(snapshot.val().Name);
+				$('#winP2').html(snapshot.val().Wins);
+				$('#losP1').html(snapshot.val().Losses);
+				$('#p2Name').css('visibility', 'hidden');
+				$('#p2Results').css('visibility', 'hidden');
+				$('.gamePieces').css('visibility', 'hidden');
+				$('#p1Waiting').css('visibility', 'hidden');
+			}
+
+			if(snapshot.key() == "2"){
+
+				$('#p2Name').html(snapshot.val().Name);
+				$('#winsP2').html(snapshot.val().Wins);
+				$('#losp2').html(snapshot.val().Losses);
+				$('#p2Name').css('visibility', 'visible');
+
+				connection.update({turn: 1});
+
+
+
+
+			}
+
+
+		});
+
+
+				connection.on("value", function(snapshot){
+
+				
+			
+					if(snapshot.exists() && snapshot.val().turn == 1){
+
+						if(player == 1){
+
+							$('#whosTurn').html("It's Your Turn!");
+							$('#p1Wins').html(snapshot.val().Wins);
+							$('#p1Loss').html(snapshot.val().Losses);
+							$('#p1Pieces').css('visibility', 'visible');
+							$('#p2Waiting').css('visibility', 'hidden');
+							$('#p2Results').css('visibility', 'visible');
+
+
+
+						} else if(player == 2){
+
+							$('#whosTurn').html("Waiting for Player 1 to choose.");
+							$('#p2Waiting').css('visibility', 'hidden');
+							$('#p2Results').css('visibility', 'visible');
+							$('#p1Pieces').css('visibility', 'hidden');	
+							$('#p2Pieces').css('visibility', 'hidden');							
+						} 
+
+					} else if(snapshot.exists() && snapshot.val().turn == 2){
+
+						if(player == 1){
+
+							$('#whosTurn').html("Waiting for Player 2 to choose.");
+							$('#p1Pieces').css('visibility', 'hidden');
+
+						} else if(player == 2){
+
+							$('#whosTurn').html("It's Your Turn!");
+							$('#p2Pieces').css('visibility', 'visible');
+
+						}
+
+					}
+
+
+				});
+
+
+		$('#p1Pieces li').on('click', function(){
+
+			choiceP1 = $(this).attr('id');
+			connection.update({turn: 2});
+			console.log("choiceP1 " + choiceP1);
+
+			return p1Choice;
+		});
+
+
+		$('#p2Pieces li').on('click', function(){
+
+			console.log("choiceP1 " + choiceP2);
+
+			choiceP2 =$(this).attr('id');
+			getWinner(choiceP1, choiceP2);
+			connection.update({turn: 1});
+
+		});
+
+		$('#reset').on('click', function(){
+			connection.remove();
+			
+
+		});
+
+
+function getWinner(playerOne, playerTwo){
+
+	
+
+	if(playerOne == 'rock' && playerTwo == 'scissors' ||
+	   playerOne == 'scissors' && playerTwo == 'paper' ||
+	   playerOne == 'paper' && playerTwo == 'rock'){
+
+		
+		winsP2++;
+		losP2++;
+
+	} else if(playerTwo == 'rock' && playerOne == 'scissors' ||
+	  		  playerTwo == 'scissors' && playerOne == 'paper' ||
+	 		  playerTwo == 'paper' && playerOne == 'rock'){
+
+		p2Wins++;
+		p1Losses++;
+
+
+	}
+
+}
+	
+
+
+</script>
+
+</body>
+</html>
